@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo 
+    </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f8f8f8;
+            margin: 20px;
+            color: #333;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            color: inherit;
+            margin-top: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(15, 50px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .number {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: 1px solid #ccc;
+            color: #d8d8d8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .marked {
+            background: #021cad;
+            color: white;
+        }
+
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .big-display {
+            font-size: 200px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #021cad;
+        }
+
+        input {
+            padding: 6px;
+            font-size: 16px;
+            width: 80px;
+            text-align: center;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 6px 14px;
+            font-size: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #919191;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #43a047;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #ddd;
+            border: none;
+            padding: 4px 10px;
+            font-size: 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            background: #919191;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .fab-menu {
+            position: fixed;
+            bottom: 75px;
+            right: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fab-menu button {
+            background: #919191;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            font-size: 40px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        body.dark .modal {
+            background: #333;
+            color: #fff;
+        }
+
+        body.dark {
+            background: #222;
+            color: #eee;
+        }
+
+        body.dark .big-display {
+            color: #00C853;
+        }
+
+        body.dark .number {
+            background: #333;
+            border-color: #555;
+            color: #999;
+        }
+
+        body.dark .marked {
+            background: #00C853;
+            color: white;
+        }
+
+        body.dark button {
+            background: #444;
+            color: #fff;
+        }
+
+        body.dark button:hover {
+            background: #00b344;
+        }
+
+        body.dark .fab {
+            background: #444;
+            color: #fff;
+        }
+
+        body.dark .fab:hover {
+            background: #00b344;
+        }
+
+        body.dark .fab-menu button {
+            background: #333;
+            color: #fff;
+        }
+
+        body.dark .fab-menu button:hover {
+            background: #00b344;
+        }
+
+
+        body.dark .modal {
+            background: #333;
+            color: #fff;
+        }
+
+        body.dark .close-modal {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="theme-toggle" onclick="alternarTema()">🌗</button>
+
+    <h1>NÚMERO SORTEADO</h1>
+    <div class="big-display" id="display">--</div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="controls">
+        <input type="number" id="numero" min="1" max="75" placeholder="nº">
+        <button onclick="marcarNumero()">Marcar</button>
+        <button onclick="limparTudo()">Limpar</button>
+    </div>
+
+    <div class="fab" onclick="toggleMenu()">+</div>
+
+    <div class="fab-menu" id="fabMenu">
+        <button onclick="abrirModal('PRÓXIMA RODADA')">Próxima Rodada</button>
+        <button onclick="abrirModal('CARTELA CHEIA')">Cartela Cheia</button>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <span class="close-modal" onclick="fecharModal()">×</span>
+            <p id="modalMessage">Mensagem</p>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const display = document.getElementById('display');
+        const input = document.getElementById('numero');
+        const body = document.body;
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalMessage = document.getElementById('modalMessage');
+        const fabMenu = document.getElementById('fabMenu');
+
+        for (let i = 1; i <= 75; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'number';
+            cell.id = 'num-' + i;
+            cell.textContent = i;
+            cell.addEventListener('click', () => toggleNumero(cell));
+            grid.appendChild(cell);
+        }
+
+        function marcarNumero() {
+            const numero = parseInt(input.value);
+            if (numero >= 1 && numero <= 75) {
+                display.textContent = numero;
+                document.querySelectorAll('.number').forEach(cell => {
+                    if (parseInt(cell.textContent) === numero) {
+                        cell.classList.add('marked');
+                    }
+                });
+                input.value = '';
+                input.focus();
+            } else {
+                alert('Digite um número entre 1 e 75');
+            }
+        }
+
+        function limparTudo() {
+            display.textContent = '--';
+            input.value = '';
+            document.querySelectorAll('.number').forEach(cell => cell.classList.remove('marked'));
+        }
+
+        function toggleNumero(cell) {
+            cell.classList.toggle('marked');
+            display.textContent = cell.classList.contains('marked') ? cell.textContent : '--';
+        }
+
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                marcarNumero();
+            }
+        });
+
+        function alternarTema() {
+            body.classList.toggle('dark');
+        }
+
+        function toggleMenu() {
+            fabMenu.style.display = fabMenu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function abrirModal(msg) {
+            modalMessage.textContent = msg;
+            modalOverlay.style.display = 'flex';
+            fabMenu.style.display = 'none';
+        }
+
+        function fecharModal() {
+            modalOverlay.style.display = 'none';
+        }
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) fecharModal();
+        });
+    </script>
+
+</body>
+
+</html>
