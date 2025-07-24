@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabéns</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0 10px;
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 10vw; /* Responsivo ao tamanho da tela */
+            margin: 10px 0;
+            word-wrap: break-word;
+        }
+
+        .icon {
+            font-size: 18vw; /* Ícone gigante para mobile */
+            margin-top: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎉 PARABÉNS! 🎉</h1>
+    <h1>VOCÊ ACABA DE GANHAR<br>1 MILHÃO</h1>
+    <div class="icon">🌽</div>
+</body>
+</html>

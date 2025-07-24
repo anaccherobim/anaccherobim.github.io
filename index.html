@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo 
-    </title>
+    <title>Bingo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,7 +16,6 @@
         }
 
         h1 {
-            color: inherit;
             margin-top: 40px;
         }
 
@@ -49,7 +47,7 @@
         }
 
         .controls {
-            margin-top: 25px;
+            margin-top: 20px;
             display: flex;
             justify-content: center;
             gap: 10px;
@@ -61,6 +59,12 @@
             margin: 20px 0;
             font-weight: bold;
             color: #021cad;
+        }
+
+        #history {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #555;
         }
 
         input {
@@ -84,7 +88,7 @@
         }
 
         button:hover {
-            background: #43a047;
+            background: #021cad;
         }
 
         .theme-toggle {
@@ -97,7 +101,6 @@
             font-size: 15px;
             border-radius: 20px;
             cursor: pointer;
-            transition: background 0.3s;
         }
 
         .fab {
@@ -134,6 +137,10 @@
             text-align: center;
         }
 
+        .fab-menu button:hover {
+            background: #021cad;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -166,9 +173,11 @@
             cursor: pointer;
         }
 
-        body.dark .modal {
-            background: #333;
-            color: #fff;
+        .modal img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
 
         body.dark {
@@ -205,27 +214,60 @@
             color: #fff;
         }
 
-        body.dark .fab:hover {
-            background: #00b344;
-        }
-
         body.dark .fab-menu button {
             background: #333;
-            color: #fff;
         }
-
-        body.dark .fab-menu button:hover {
-            background: #00b344;
-        }
-
 
         body.dark .modal {
             background: #333;
             color: #fff;
         }
+        body.dark #history {
+            color: white;
+        }
 
-        body.dark .close-modal {
-            color: #fff;
+        .modal img {
+            border-radius: 10px;
+        }
+   
+        @media (max-width: 768px) {
+            .big-display {
+                font-size: 100px;
+            }
+
+            input {
+                width: 60px;
+                font-size: 14px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .big-display {
+                font-size: 80px;
+            }
+
+            .fab {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+
+            .grid {
+                gap: 5px;
+                justify-content: center;
+            }
+
+            .number {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+            }
         }
     </style>
 </head>
@@ -236,6 +278,8 @@
 
     <h1>NÚMERO SORTEADO</h1>
     <div class="big-display" id="display">--</div>
+
+    <div id="history">Últimos números: --</div>
 
     <div class="grid" id="grid"></div>
 
@@ -250,28 +294,30 @@
     <div class="fab-menu" id="fabMenu">
         <button onclick="abrirModal('PRÓXIMA RODADA')">Próxima Rodada</button>
         <button onclick="abrirModal('CARTELA CHEIA')">Cartela Cheia</button>
+        <button onclick="abrirModal('IMG', 'img/formas-de-bingo.png')">Forma de bater</button>
     </div>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <span class="close-modal" onclick="fecharModal()">×</span>
-            <p id="modalMessage">Mensagem</p>
+            <div id="modalMessage"></div>
         </div>
     </div>
 
     <script>
         const grid = document.getElementById('grid');
         const display = document.getElementById('display');
+        const historyDisplay = document.getElementById('history');
         const input = document.getElementById('numero');
         const body = document.body;
         const modalOverlay = document.getElementById('modalOverlay');
         const modalMessage = document.getElementById('modalMessage');
         const fabMenu = document.getElementById('fabMenu');
+        let lastNumbers = [];
 
         for (let i = 1; i <= 75; i++) {
             const cell = document.createElement('div');
             cell.className = 'number';
-            cell.id = 'num-' + i;
             cell.textContent = i;
             cell.addEventListener('click', () => toggleNumero(cell));
             grid.appendChild(cell);
@@ -286,6 +332,7 @@
                         cell.classList.add('marked');
                     }
                 });
+                updateHistory(numero);
                 input.value = '';
                 input.focus();
             } else {
@@ -296,12 +343,27 @@
         function limparTudo() {
             display.textContent = '--';
             input.value = '';
+            historyDisplay.textContent = 'Últimos números: --';
+            lastNumbers = [];
             document.querySelectorAll('.number').forEach(cell => cell.classList.remove('marked'));
         }
 
         function toggleNumero(cell) {
             cell.classList.toggle('marked');
-            display.textContent = cell.classList.contains('marked') ? cell.textContent : '--';
+            if (cell.classList.contains('marked')) {
+                display.textContent = cell.textContent;
+                updateHistory(parseInt(cell.textContent));
+            } else {
+                display.textContent = '--';
+            }
+        }
+
+        function updateHistory(num) {
+            lastNumbers.unshift(num);
+            if (lastNumbers.length > 3) {
+                lastNumbers.pop();
+            }
+            historyDisplay.textContent = 'Últimos números: ' + lastNumbers.join(' - ');
         }
 
         input.addEventListener('keydown', function (event) {
@@ -318,10 +380,18 @@
             fabMenu.style.display = fabMenu.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        function abrirModal(msg) {
-            modalMessage.textContent = msg;
+        function abrirModal(tipo, conteudo) {
             modalOverlay.style.display = 'flex';
             fabMenu.style.display = 'none';
+            modalMessage.innerHTML = '';
+
+            if (conteudo) {
+                const img = document.createElement('img');
+                img.src = conteudo;
+                modalMessage.appendChild(img);
+            } else {
+                modalMessage.textContent = tipo;
+            }
         }
 
         function fecharModal() {
