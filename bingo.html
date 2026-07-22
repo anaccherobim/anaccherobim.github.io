@@ -6,17 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bingo</title>
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: #f8f8f8;
-            margin: 20px;
+            background: url('img/FundoE.png') top center / cover no-repeat fixed;
             color: #333;
             transition: background 0.3s, color 0.3s;
-        }
-
-        h1 {
-            margin-top: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .grid {
@@ -24,7 +30,7 @@
             grid-template-columns: repeat(15, 50px);
             gap: 5px;
             justify-content: center;
-            margin: 20px auto;
+            margin: 10px auto;
         }
 
         .number {
@@ -44,6 +50,7 @@
         .marked {
             background: #021cad;
             color: white;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
         }
 
         .controls {
@@ -54,17 +61,56 @@
             flex-wrap: wrap;
         }
 
-        .big-display {
-            font-size: 200px;
-            margin: 20px 0;
-            font-weight: bold;
-            color: #021cad;
+        /* modal do número sorteado */
+        .number-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 28, 173, 0.92);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
         }
 
-        #history {
-            font-size: 20px;
-            margin: 10px 0;
-            color: #555;
+        .number-modal-label {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
+        }
+
+        .number-modal-value {
+            font-size: 260px;
+            font-weight: bold;
+            color: white;
+            line-height: 1;
+            text-shadow: -4px -4px 0 black, 4px -4px 0 black, -4px 4px 0 black, 4px 4px 0 black;
+        }
+
+        .number-modal-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 8px;
+            background: white;
+            width: 100%;
+            transform-origin: left;
+            animation: none;
+        }
+
+        @keyframes shrinkBar {
+            from { transform: scaleX(1); }
+            to   { transform: scaleX(0); }
+        }
+
+        body.dark .number-modal-overlay {
+            background: rgba(80, 40, 0, 0.93);
         }
 
         input {
@@ -101,6 +147,7 @@
             font-size: 15px;
             border-radius: 20px;
             cursor: pointer;
+            z-index: 1;
         }
 
         .fab {
@@ -118,6 +165,7 @@
             font-size: 28px;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1;
         }
 
         .fab-menu {
@@ -127,6 +175,7 @@
             display: none;
             flex-direction: column;
             gap: 10px;
+            z-index: 1;
         }
 
         .fab-menu button {
@@ -147,58 +196,68 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(2, 28, 173, 0.92);
             display: none;
             justify-content: center;
             align-items: center;
-        }
-
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            width: 80%;
-            max-width: 600px;
-            font-size: 40px;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 30px;
+            flex-direction: column;
+            z-index: 9998;
             cursor: pointer;
         }
 
+        .modal {
+            background: transparent;
+            text-align: center;
+            font-size: 100px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 6px;
+            position: relative;
+            padding: 0 40px;
+            text-shadow: -4px -4px 0 black, 4px -4px 0 black, -4px 4px 0 black, 4px 4px 0 black;
+        }
+
+        .close-modal {
+            position: fixed;
+            top: 20px;
+            right: 28px;
+            font-size: 50px;
+            cursor: pointer;
+            color: white;
+            line-height: 1;
+            text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
+        }
+
         .modal img {
-            max-width: 100%;
+            max-width: 90vw;
+            max-height: 80vh;
             height: auto;
             display: block;
             margin: 0 auto;
+            border-radius: 16px;
         }
 
         body.dark {
-            background: #222;
+            background: url('img/FundoE.png') top center / cover no-repeat fixed;
             color: #eee;
         }
 
         body.dark .big-display {
-            color: #00C853;
+            color: #ff8c00;
         }
 
         body.dark .number {
-            background: #333;
-            border-color: #555;
-            color: #999;
+            background: #d0d0d0;
+            border-color: #aaa;
+            color: #fff;
         }
 
         body.dark .marked {
-            background: #00C853;
-            color: white;
+            background: #ff8c00;
+            color: black;
+            text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
         }
+        
 
         body.dark button {
             background: #444;
@@ -206,7 +265,7 @@
         }
 
         body.dark button:hover {
-            background: #00b344;
+            background: #ff8c00;
         }
 
         body.dark .fab {
@@ -218,12 +277,8 @@
             background: #333;
         }
 
-        body.dark .modal {
-            background: #333;
-            color: #fff;
-        }
-        body.dark #history {
-            color: white;
+        body.dark .modal-overlay {
+            background: rgba(80, 40, 0, 0.93);
         }
 
         .modal img {
@@ -276,10 +331,12 @@
 
     <button class="theme-toggle" onclick="alternarTema()">🌗</button>
 
-    <h1>NÚMERO SORTEADO</h1>
-    <div class="big-display" id="display">--</div>
-
-    <div id="history">Últimos números: --</div>
+    <!-- Modal número sorteado -->
+    <div class="number-modal-overlay" id="numberModal" onclick="fecharModalNumero()">
+        <div class="number-modal-label">NÚMERO SORTEADO</div>
+        <div class="number-modal-value" id="numberModalValue">--</div>
+        <div class="number-modal-bar" id="numberModalBar"></div>
+    </div>
 
     <div class="grid" id="grid"></div>
 
@@ -297,7 +354,7 @@
         <button onclick="abrirModal('IMG', 'img/formas-de-bingo.png')">Forma de bater</button>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-overlay" id="modalOverlay" onclick="fecharModalOverlay(event)">
         <div class="modal">
             <span class="close-modal" onclick="fecharModal()">×</span>
             <div id="modalMessage"></div>
@@ -306,14 +363,16 @@
 
     <script>
         const grid = document.getElementById('grid');
-        const display = document.getElementById('display');
-        const historyDisplay = document.getElementById('history');
         const input = document.getElementById('numero');
         const body = document.body;
         const modalOverlay = document.getElementById('modalOverlay');
         const modalMessage = document.getElementById('modalMessage');
         const fabMenu = document.getElementById('fabMenu');
+        const numberModal = document.getElementById('numberModal');
+        const numberModalValue = document.getElementById('numberModalValue');
+        const numberModalBar = document.getElementById('numberModalBar');
         let lastNumbers = [];
+        let numberModalTimer = null;
 
         for (let i = 1; i <= 75; i++) {
             const cell = document.createElement('div');
@@ -323,16 +382,36 @@
             grid.appendChild(cell);
         }
 
+        function fecharModalNumero() {
+            if (numberModalTimer) clearTimeout(numberModalTimer);
+            numberModal.style.display = 'none';
+        }
+
+        function mostrarModalNumero(num) {
+            numberModalValue.textContent = num;
+            numberModal.style.display = 'flex';
+
+            // reinicia a barra de progresso
+            numberModalBar.style.animation = 'none';
+            numberModalBar.offsetHeight; // reflow forçado
+            numberModalBar.style.animation = 'shrinkBar 3s linear forwards';
+
+            if (numberModalTimer) clearTimeout(numberModalTimer);
+            numberModalTimer = setTimeout(() => {
+                numberModal.style.display = 'none';
+            }, 3000);
+        }
+
         function marcarNumero() {
             const numero = parseInt(input.value);
             if (numero >= 1 && numero <= 75) {
-                display.textContent = numero;
                 document.querySelectorAll('.number').forEach(cell => {
                     if (parseInt(cell.textContent) === numero) {
                         cell.classList.add('marked');
                     }
                 });
                 updateHistory(numero);
+                mostrarModalNumero(numero);
                 input.value = '';
                 input.focus();
             } else {
@@ -341,20 +420,17 @@
         }
 
         function limparTudo() {
-            display.textContent = '--';
             input.value = '';
-            historyDisplay.textContent = 'Últimos números: --';
             lastNumbers = [];
+            numberModal.style.display = 'none';
             document.querySelectorAll('.number').forEach(cell => cell.classList.remove('marked'));
         }
 
         function toggleNumero(cell) {
             cell.classList.toggle('marked');
             if (cell.classList.contains('marked')) {
-                display.textContent = cell.textContent;
                 updateHistory(parseInt(cell.textContent));
-            } else {
-                display.textContent = '--';
+                mostrarModalNumero(cell.textContent);
             }
         }
 
@@ -363,7 +439,6 @@
             if (lastNumbers.length > 3) {
                 lastNumbers.pop();
             }
-            historyDisplay.textContent = 'Últimos números: ' + lastNumbers.join(' - ');
         }
 
         input.addEventListener('keydown', function (event) {
@@ -396,6 +471,10 @@
 
         function fecharModal() {
             modalOverlay.style.display = 'none';
+        }
+
+        function fecharModalOverlay(e) {
+            if (e.target === modalOverlay) fecharModal();
         }
 
         modalOverlay.addEventListener('click', (e) => {
